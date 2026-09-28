@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<title>Tonton Jiee — Messagerie</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#8a3b52">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="chat-ui.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+<!-- Application d'administration de la messagerie JieePlay : projet séparé du
+     jeu (autre dépôt, autre URL, autres icônes) pour s'installer comme une
+     application distincte. Voir README. -->
+
+<div id="boot" class="screen center"><div class="spinner"></div></div>
+
+<div id="login" class="screen center hidden">
+	<form id="login-form" class="login-card" autocomplete="on">
+		<img class="login-logo" src="icons/icon-192.png" alt="">
+		<h1>Tonton Jiee</h1>
+		<p class="login-sub">Messagerie JieePlay — accès réservé</p>
+		<input id="login-email" type="email" placeholder="Email" autocomplete="username" required>
+		<input id="login-password" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
+		<button id="btn-login" type="submit">Se connecter</button>
+		<p id="login-error" class="login-error hidden"></p>
+	</form>
+</div>
+
+<div id="app" class="screen hidden">
+	<aside id="list-panel" class="list-panel">
+		<header class="bar">
+			<div class="bar-title">Conversations</div>
+			<button id="btn-notif" class="bar-btn hidden" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z"/><path d="M10 18.5a2 2 0 0 0 4 0"/></svg></button>
+			<button id="btn-list-menu" class="bar-btn" aria-label="Menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="18.5" r="1.4" fill="currentColor"/></svg></button>
+		</header>
+		<div class="search"><input id="search" type="search" placeholder="Rechercher un joueur…" autocomplete="off"></div>
+		<div id="conv-list" class="conv-list"></div>
+	</aside>
+
+	<main id="thread-panel" class="thread-panel">
+		<div id="thread-empty" class="thread-empty">
+			<img src="icons/icon-192.png" alt="">
+			<p>Sélectionne une conversation</p>
+		</div>
+		<section id="thread" class="thread hidden">
+			<header class="bar">
+				<button id="btn-thread-back" class="bar-btn only-mobile" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button>
+				<div id="thread-avatar" class="avatar"></div>
+				<div class="bar-text">
+					<div id="thread-name" class="bar-title"></div>
+					<div id="thread-status" class="bar-status"></div>
+				</div>
+				<button id="btn-thread-menu" class="bar-btn" aria-label="Menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="18.5" r="1.4" fill="currentColor"/></svg></button>
+			</header>
+			<div id="thread-mount" class="thread-mount"></div>
+		</section>
+	</main>
+</div>
+
+<div id="pop" class="pop hidden"></div>
+<div id="confirm" class="modal hidden"><div class="modal-card"><h3 id="confirm-title"></h3><p id="confirm-body"></p><div class="modal-row"><button id="confirm-no" class="ghost">Annuler</button><button id="confirm-yes" class="danger">Supprimer</button></div></div></div>
+
+<script src="push-config.js"></script>
+<script src="chat-ui.js"></script>
+<script type="module" src="admin.js"></script>
+</body>
+</html>
