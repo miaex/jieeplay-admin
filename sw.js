@@ -37,7 +37,7 @@ self.addEventListener("notificationclick", (event) => {
 	);
 });
 
-const CACHE = "tj-admin-v1";
+const CACHE = "tj-admin-v2";
 const SHELL = ["./", "./index.html", "./admin.js", "./admin.css", "./chat-ui.js", "./chat-ui.css", "./push-config.js", "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png"];
 
 self.addEventListener("install", (e) => {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Tonton Jiee — Messagerie</title>
+<title>Tonton Jiee — Admin</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#8a3b52">
 <link rel="manifest" href="manifest.json">
@@ -14,17 +14,13 @@
 </head>
 <body>
 
-<!-- Application d'administration de la messagerie JieePlay : projet séparé du
-     jeu (autre dépôt, autre URL, autres icônes) pour s'installer comme une
-     application distincte. Voir README. -->
-
 <div id="boot" class="screen center"><div class="spinner"></div></div>
 
 <div id="login" class="screen center hidden">
 	<form id="login-form" class="login-card" autocomplete="on">
 		<img class="login-logo" src="icons/icon-192.png" alt="">
 		<h1>Tonton Jiee</h1>
-		<p class="login-sub">Messagerie JieePlay — accès réservé</p>
+		<p class="login-sub">Console d'administration JieePlay</p>
 		<input id="login-email" type="email" placeholder="Email" autocomplete="username" required>
 		<input id="login-password" type="password" placeholder="Mot de passe" autocomplete="current-password" required>
 		<button id="btn-login" type="submit">Se connecter</button>
@@ -33,33 +29,139 @@
 </div>
 
 <div id="app" class="screen hidden">
-	<aside id="list-panel" class="list-panel">
-		<header class="bar">
-			<div class="bar-title">Conversations</div>
-			<button id="btn-notif" class="bar-btn hidden" aria-label="Notifications"><svg viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z"/><path d="M10 18.5a2 2 0 0 0 4 0"/></svg></button>
-			<button id="btn-list-menu" class="bar-btn" aria-label="Menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="18.5" r="1.4" fill="currentColor"/></svg></button>
-		</header>
-		<div class="search"><input id="search" type="search" placeholder="Rechercher un joueur…" autocomplete="off"></div>
-		<div id="conv-list" class="conv-list"></div>
-	</aside>
+	<!-- Rail de sections (V36) — toujours visible, sauf dans un fil de
+	     conversation plein écran sur mobile. -->
+	<nav id="railnav" class="railnav">
+		<button class="rail-btn active" data-section="dashboard" aria-label="Tableau de bord">
+			<svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.6"/><rect x="13" y="3.5" width="7.5" height="4.5" rx="1.6"/><rect x="13" y="10.5" width="7.5" height="10" rx="1.6"/><rect x="3.5" y="13.5" width="7.5" height="7" rx="1.6"/></svg>
+			<span>Dashboard</span>
+		</button>
+		<button class="rail-btn" data-section="players" aria-label="Joueurs">
+			<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/><circle cx="17.3" cy="8.5" r="2.4"/><path d="M15.3 13.6c2.5.2 4.2 2.2 4.2 5"/></svg>
+			<span>Joueurs</span>
+		</button>
+		<button class="rail-btn" data-section="messages" aria-label="Messages">
+			<svg viewBox="0 0 24 24"><path d="M4 5.5h16v11H9.5L5 20v-3.5H4v-11Z"/></svg>
+			<span>Messages</span>
+			<span id="rail-badge-messages" class="rail-badge hidden"></span>
+		</button>
+		<button class="rail-btn" data-section="settings" aria-label="Paramètres">
+			<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.1"/><path d="M19.4 13.2c.1-.4.1-.8 0-1.2l1.6-1.3-1.5-2.6-1.9.6a4.7 4.7 0 0 0-1-.6L16.2 6h-3l-.4 2.1c-.4.1-.7.3-1 .6l-1.9-.6-1.5 2.6 1.6 1.3c-.1.4-.1.8 0 1.2L8.4 14.5l1.5 2.6 1.9-.6c.3.3.6.5 1 .6l.4 2.1h3l.4-2.1c.4-.1.7-.3 1-.6l1.9.6 1.5-2.6-1.6-1.3Z"/></svg>
+			<span>Paramètres</span>
+		</button>
+	</nav>
 
-	<main id="thread-panel" class="thread-panel">
-		<div id="thread-empty" class="thread-empty">
-			<img src="icons/icon-192.png" alt="">
-			<p>Sélectionne une conversation</p>
-		</div>
-		<section id="thread" class="thread hidden">
-			<header class="bar">
-				<button id="btn-thread-back" class="bar-btn only-mobile" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button>
-				<div id="thread-avatar" class="avatar"></div>
-				<div class="bar-text">
-					<div id="thread-name" class="bar-title"></div>
-					<div id="thread-status" class="bar-status"></div>
+	<main id="content" class="content">
+
+		<!-- ================= DASHBOARD ================= -->
+		<section id="view-dashboard" class="view">
+			<header class="viewbar"><h1>Vue générale</h1><button id="btn-dash-refresh" class="viewbar-btn" aria-label="Actualiser"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.6-5.7M20 12a8 8 0 0 1-13.6 5.7"/><path d="M17 4v4h-4M7 20v-4h4"/></svg></button></header>
+			<div class="viewbody" id="dash-body">
+				<div class="kpi-row">
+					<div class="kpi"><div class="kpi-num" id="kpi-players">—</div><div class="kpi-label">Joueurs</div></div>
+					<div class="kpi"><div class="kpi-num" id="kpi-active">—</div><div class="kpi-label">Actifs 24h</div></div>
+					<div class="kpi"><div class="kpi-num" id="kpi-unread">—</div><div class="kpi-label">Non lus</div></div>
 				</div>
-				<button id="btn-thread-menu" class="bar-btn" aria-label="Menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="18.5" r="1.4" fill="currentColor"/></svg></button>
-			</header>
-			<div id="thread-mount" class="thread-mount"></div>
+				<div class="card">
+					<div class="card-title">Actions rapides</div>
+					<div class="quick-row">
+						<button class="quick-btn" data-go="messages"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v11H9.5L5 20v-3.5H4v-11Z"/></svg>Messages</button>
+						<button class="quick-btn" data-go="players"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c0-3.3 2.5-5.5 5.5-5.5s5.5 2.2 5.5 5.5"/></svg>Joueurs</button>
+						<button class="quick-btn" id="quick-unread"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4.5l3 2"/></svg>Non lus</button>
+						<button class="quick-btn" data-go="settings"><svg viewBox="0 0 24 24"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z"/></svg>Notifications</button>
+					</div>
+				</div>
+				<div class="card">
+					<div class="card-title">Conversations à traiter</div>
+					<div id="dash-unread-list" class="mini-list"></div>
+				</div>
+				<div class="card">
+					<div class="card-title">Activité récente</div>
+					<div id="dash-activity-list" class="mini-list"></div>
+				</div>
+				<div class="card">
+					<div class="card-title">État du système</div>
+					<div id="dash-health" class="health-grid"></div>
+				</div>
+			</div>
 		</section>
+
+		<!-- ================= JOUEURS ================= -->
+		<section id="view-players" class="view">
+			<header class="viewbar">
+				<h1>Joueurs</h1>
+				<span id="players-count" class="viewbar-count"></span>
+			</header>
+			<div class="viewbody">
+				<div class="search-row"><input id="players-search" type="search" placeholder="Rechercher un prénom, un UID…" autocomplete="off"></div>
+				<div id="players-filters" class="chip-row"></div>
+				<div id="players-list" class="player-rows"></div>
+			</div>
+		</section>
+
+		<!-- ================= FICHE JOUEUR ================= -->
+		<section id="view-player" class="view">
+			<header class="viewbar"><button id="btn-player-back" class="viewbar-btn only-mobile" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button><h1 id="player-view-title">Joueur</h1></header>
+			<div class="viewbody" id="player-detail"></div>
+		</section>
+
+		<!-- ================= MESSAGES (liste + fil) ================= -->
+		<section id="view-messages" class="view">
+			<div class="messages-split">
+				<aside id="list-panel" class="list-panel">
+					<div class="search"><input id="search" type="search" placeholder="Rechercher un joueur…" autocomplete="off"></div>
+					<div id="conv-list" class="conv-list"></div>
+				</aside>
+				<div id="thread-panel" class="thread-panel">
+					<div id="thread-empty" class="thread-empty"><img src="icons/icon-192.png" alt=""><p>Sélectionne une conversation</p></div>
+					<section id="thread" class="thread hidden">
+						<header class="bar">
+							<button id="btn-thread-back" class="bar-btn only-mobile" aria-label="Retour"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button>
+							<div id="thread-avatar" class="avatar"></div>
+							<div class="bar-text"><div id="thread-name" class="bar-title"></div><div id="thread-status" class="bar-status"></div></div>
+							<button id="btn-thread-menu" class="bar-btn" aria-label="Menu"><svg viewBox="0 0 24 24"><circle cx="12" cy="5.5" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="18.5" r="1.4" fill="currentColor"/></svg></button>
+						</header>
+						<div id="thread-mount" class="thread-mount"></div>
+					</section>
+				</div>
+			</div>
+		</section>
+
+		<!-- ================= PARAMÈTRES / OUTILS ================= -->
+		<section id="view-settings" class="view">
+			<header class="viewbar"><h1>Paramètres</h1></header>
+			<div class="viewbody">
+				<div class="card">
+					<div class="card-title">Compte</div>
+					<div class="kv"><span>Email</span><span id="set-email">—</span></div>
+					<div class="kv"><span>UID admin</span><span id="set-uid">—</span></div>
+					<button id="btn-signout" class="ghost-btn">Se déconnecter</button>
+				</div>
+				<div class="card">
+					<div class="card-title">Notifications</div>
+					<div id="push-diagnostic" class="diag-grid"></div>
+					<button id="btn-notif-enable" class="ghost-btn">Activer les notifications</button>
+					<button id="btn-notif-test" class="ghost-btn">Tester la notification</button>
+					<p id="push-test-result" class="hint-text"></p>
+				</div>
+				<div class="card">
+					<div class="card-title">Application</div>
+					<div class="kv"><span>Version admin</span><span>V36</span></div>
+					<div class="kv"><span>URL</span><span id="set-url">—</span></div>
+					<div class="kv"><span>Réseau</span><span id="set-network">—</span></div>
+					<div class="kv"><span>Service Worker</span><span id="set-sw">—</span></div>
+				</div>
+				<div class="card">
+					<div class="card-title">Outils</div>
+					<button id="btn-tool-refresh" class="ghost-btn">Actualiser les données</button>
+					<button id="btn-tool-check" class="ghost-btn">Vérifier Firebase / Firestore</button>
+					<button id="btn-tool-sw" class="ghost-btn">Vérifier le Service Worker</button>
+					<button id="btn-tool-purge" class="ghost-btn">Nettoyer les conversations inactives…</button>
+					<p id="tool-result" class="hint-text"></p>
+				</div>
+			</div>
+		</section>
+
 	</main>
 </div>
 
