@@ -556,14 +556,24 @@ async function onDeleteMessage(m, scope) {
 // ---------------- suppression joueur (données de sa conversation) ----------------
 async function deletePlayerData(id) {
 	const col = collection(db, "conversations", id, "messages");
-	for (;;) {
-		const snap = await getDocs(query(col, limit(300)));
-		if (snap.empty) break;
-		const batch = writeBatch(db);
-		snap.docs.forEach((d) => batch.delete(d.ref));
-		await batch.commit();
+	try {
+		for (;;) {
+			const snap = await getDocs(query(col, limit(300)));
+			if (snap.empty) break;
+			const batch = writeBatch(db);
+			snap.docs.forEach((d) => batch.delete(d.ref));
+			await batch.commit();
+		}
+	} catch (e) {
+		e.message = `[suppression des messages] ${e.message || e}`;
+		throw e;
 	}
-	await deleteDoc(doc(db, "conversations", id));
+	try {
+		await deleteDoc(doc(db, "conversations", id));
+	} catch (e) {
+		e.message = `[suppression de la conversation] ${e.message || e}`;
+		throw e;
+	}
 }
 async function confirmDeletePlayer(id) {
 	const c = convs.get(id) || {};
@@ -580,8 +590,13 @@ async function confirmDeletePlayer(id) {
 		toast(`${name} supprimé`);
 		if (AdminNav.current === "player:" + id || AdminNav.current === "messages:" + id) AdminNav.back();
 	} catch (e) {
+		// Diagnostic (V37) : affiche le code Firestore réel au lieu d'un
+		// message générique — ex. "permission-denied" signifie que les
+		// règles n'ont pas été republiées ou qu'une des deux suppressions
+		// (messages / document parent) n'est pas couverte ; un autre code
+		// (ex. "unavailable") pointerait vers autre chose (réseau…).
 		console.error("Admin: suppression joueur échouée", e);
-		toast("Suppression refusée par Firestore. Vérifie que firestore.rules a bien été republié.");
+		toast(`Suppression refusée : ${e.code || e.message || e}`);
 	}
 }
 async function purgeInactive() {
