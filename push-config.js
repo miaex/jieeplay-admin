@@ -7,4 +7,4 @@
 // "Notifications push en temps réel". Vide = pas de push automatique (la
 // messagerie continue de fonctionner normalement, en temps réel, quand
 // l'app est ouverte).
-window.JIEE_PUSH_RELAY_URL = "";
+window.JIEE_PUSH_RELAY_URL = "https://script.google.com/macros/s/AKfycbwO_BVUOV98SFmWADA_7RpRTcfHb5qTfbyGdMSEtttxFXc3pB7ywx5WRhEuoS7NRugL/exec";
