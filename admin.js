@@ -684,73 +684,25 @@ async function enablePush() {
  * résultat n'est marqué "reçue" que si la notification arrive réellement. */
 async function testPush() {
 const resultEl = $("push-test-result");
-
-if (!window.JIEE_PUSH_RELAY_URL) {
-	resultEl.textContent = "❌ Aucun relais configuré.";
-	return;
-}
-
-if (Notification.permission !== "granted") {
-	resultEl.textContent = "❌ Active d'abord les notifications.";
-	return;
-}
-
-if (!auth.currentUser) {
-	resultEl.textContent = "❌ Admin non authentifié.";
-	return;
-}
-
-resultEl.textContent = "⏳ Envoi du test au relais…";
-
+if (!window.JIEE_PUSH_RELAY_URL) { resultEl.textContent = "Aucun relais configuré (js/push-config.js)."; return; }
+if (Notification.permission !== "granted") { resultEl.textContent = "Active d'abord les notifications ci-dessus."; return; }
+resultEl.textContent = "Envoi en cours…";
+let received = false;
+const onMsg = (payload) => { if (payload.data && payload.data.tag === "tj-self-test") received = true; };
 try {
-	const messaging = getMessaging(app);
-
-	const onMsg = (payload) => {
-		console.log("FCM TEST reçu :", payload);
-
-		if (payload.data && payload.data.tag === "tj-self-test") {
-			resultEl.textContent = "✓ Notification FCM reçue de bout en bout.";
-		}
-	};
-
-	onMessage(messaging, onMsg);
-
-	const idToken = await auth.currentUser.getIdToken();
-
-	const response = await fetch(window.JIEE_PUSH_RELAY_URL, {
-		method: "POST",
-		headers: {
-			"Content-Type": "text/plain;charset=utf-8"
-		},
-		body: JSON.stringify({
-			idToken,
-			kind: "selfTest"
-		})
-	});
-
-	const responseText = await response.text();
-
-	resultEl.textContent =
-		`Réponse du relais : HTTP ${response.status} — ${responseText.slice(0, 500)}`;
-
-	console.log("RELAIS STATUS :", response.status);
-	console.log("RELAIS RESPONSE :", responseText);
-
-	setTimeout(() => {
-		if (resultEl.textContent.startsWith("Réponse du relais")) {
-			resultEl.textContent +=
-				" | Aucun événement FCM reçu après 6 s.";
-		}
-	}, 6000);
-
-} catch (e) {
-	console.error("TEST PUSH ERROR :", e);
-
-	resultEl.textContent =
-		"⚠️ Le relais a peut-être reçu la requête, mais sa réponse est illisible depuis le navigateur : " +
-		e.message;
-}
-
+const messaging = getMessaging(app);
+const off = onMessage(messaging, onMsg);
+const idToken = await auth.currentUser.getIdToken();
+await fetch(window.JIEE_PUSH_RELAY_URL, {
+method: "POST", mode: "no-cors", keepalive: true, headers: { "Content-Type": "text/plain;charset=utf-8" },
+body: JSON.stringify({ idToken, kind: "selfTest" }),
+}).catch(() => {});
+setTimeout(() => {
+resultEl.textContent = received
+? "✓ Notification reçue de bout en bout."
+: "Aucune notification reçue après 6 s — le relais a répondu mais rien n'est arrivé (voir README, diagnostic push). Si l'app est au premier plan, vérifie aussi les notifications système en arrière-plan.";
+}, 6000);
+} catch (e) { resultEl.textContent = "Échec de l'envoi : " + e.message; }
 }
 async function toolCheckFirebase() {
 	const el = $("tool-result");
