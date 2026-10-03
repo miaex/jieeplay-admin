@@ -683,7 +683,6 @@ async function enablePush() {
  * la VRAIE chaîne FCM → Service Worker, pas seulement un ping HTTP. Le
  * résultat n'est marqué "reçue" que si la notification arrive réellement. */
 async function testPush() {
-async function testPush() {
 const resultEl = $("push-test-result");
 
 if (!window.JIEE_PUSH_RELAY_URL) {
