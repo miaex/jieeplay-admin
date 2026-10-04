@@ -10,6 +10,8 @@
 // l'initialisation Firebase nommée, le cache local persistant, la logique
 // d'envoi/réception/accusés/présence de la messagerie, chat-ui.js/css.
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+
 import {
 	getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
 	collection, doc, addDoc, updateDoc, setDoc, deleteDoc, getDoc, getDocs, onSnapshot, query, orderBy, limit,
