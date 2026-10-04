@@ -10,11 +10,10 @@
 // l'initialisation Firebase nommée, le cache local persistant, la logique
 // d'envoi/réception/accusés/présence de la messagerie, chat-ui.js/css.
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import {
 	getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
 	collection, doc, addDoc, updateDoc, setDoc, deleteDoc, getDoc, getDocs, onSnapshot, query, orderBy, limit,
-	serverTimestamp, increment, Timestamp, writeBatch,
+	serverTimestamp, increment, Timestamp, writeBatch, arrayUnion,
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-messaging.js";
@@ -671,7 +670,15 @@ async function enablePush() {
 		const messaging = getMessaging(app);
 		const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
 		if (!token) { toast("Impossible d'obtenir un token."); return; }
-		await setDoc(doc(db, "admin", "config"), { pushToken: token, updatedAt: serverTimestamp() }, { merge: true });
+		await setDoc(
+	doc(db, "admin", "config"),
+	{
+		pushToken: token,
+		pushTokens: arrayUnion(token),
+		updatedAt: serverTimestamp()
+	},
+	{ merge: true }
+);
 		onMessage(messaging, (payload) => { const d = payload.data || {}; if (d.body) toast(`${d.title || ""} : ${d.body}`); });
 		refreshNotifButton();
 		renderPushDiagnostic();
